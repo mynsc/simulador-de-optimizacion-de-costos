@@ -1,0 +1,466 @@
+/**
+ * SIMULADOR DE OPTIMIZACIÓN DE COSTOS EN LA NUBE
+ * Proyecto de Cálculo 2
+ * 
+ * Este simulador aplica conceptos de cálculo diferencial e integral para:
+ * 1. Optimizar costos de recursos en la nube mediante derivadas
+ * 2. Calcular consumo energético acumulado mediante integrales
+ * 
+ * CONCEPTOS MATEMÁTICOS APLICADOS:
+ * - Derivadas: Optimización de funciones, puntos críticos, mínimos
+ * - Integrales: Acumulación, área bajo curvas, funciones periódicas
+ */
+
+import React, { useState, useMemo } from 'react';
+import { Calculator, Server, Zap, TrendingDown, Info, DollarSign, Activity } from 'lucide-react';
+
+// Componentes UI reutilizables
+import { Card, Slider, SectionTitle } from './components/ui';
+
+// Componentes de gráficas
+import { OptimizationGraph, IntegralGraph } from './components/graphs';
+
+// Funciones de cálculo matemático
+import {
+  calculateOptimalRAM,
+  calculateSavings,
+  calculateTotalEnergy,
+  calculateEnergyCost
+} from './utils/mathCalculations';
+
+// Constantes de configuración
+import {
+  OPTIMIZATION_DEFAULTS,
+  ENERGY_DEFAULTS,
+  LABELS
+} from './constants';
+
+
+export default function CloudOptimizationSim() {
+  // =========================================================================
+  // ESTADO DE LA APLICACIÓN
+  // =========================================================================
+  
+  const [activeTab, setActiveTab] = useState('optimization');
+
+  // Estado para Optimización (Derivadas)
+  const [k1, setK1] = useState(OPTIMIZATION_DEFAULTS.K1_INITIAL);
+  const [k2, setK2] = useState(OPTIMIZATION_DEFAULTS.K2_INITIAL);
+  const [userX, setUserX] = useState(OPTIMIZATION_DEFAULTS.USER_RAM_INITIAL);
+
+  // Estado para Acumulación (Integrales)
+  const [baseA, setBaseA] = useState(ENERGY_DEFAULTS.BASE_INITIAL);
+  const [ampB, setAmpB] = useState(ENERGY_DEFAULTS.AMPLITUDE_INITIAL);
+
+  // =========================================================================
+  // CÁLCULOS MATEMÁTICOS MEMOIZADOS
+  // =========================================================================
+
+  // Optimización mediante derivadas
+  const optimalX = useMemo(
+    () => calculateOptimalRAM(k1, k2),
+    [k1, k2]
+  );
+
+  const savingsData = useMemo(
+    () => calculateSavings(userX, optimalX, k1, k2),
+    [userX, optimalX, k1, k2]
+  );
+
+  // Integración de consumo energético
+  const totalEnergy = useMemo(
+    () => calculateTotalEnergy(baseA, ampB),
+    [baseA, ampB]
+  );
+
+  const energyCost = useMemo(
+    () => calculateEnergyCost(totalEnergy, ENERGY_DEFAULTS.PRICE_PER_KWH),
+    [totalEnergy]
+  );
+
+
+  // =========================================================================
+  // RENDERIZADO
+  // =========================================================================
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12">
+      
+      {/* ===== ENCABEZADO ===== */}
+      <header className="bg-slate-900 text-white pt-10 pb-24 px-6 shadow-lg">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+              <Server size={32} className="text-white" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              {LABELS.APP_TITLE}
+            </h1>
+          </div>
+          <p className="text-slate-300 text-lg max-w-2xl leading-relaxed">
+            {LABELS.APP_DESCRIPTION}
+          </p>
+        </div>
+      </header>
+
+      {/* ===== CONTENIDO PRINCIPAL ===== */}
+      <main className="max-w-5xl mx-auto px-6 -mt-16">
+        
+        {/* Navegación de pestañas */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+          <button
+            onClick={() => setActiveTab('optimization')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all shadow-sm ${
+              activeTab === 'optimization' 
+                ? 'bg-white text-blue-600 ring-2 ring-blue-600' 
+                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+            }`}
+          >
+            <TrendingDown size={18} />
+            {LABELS.TAB_OPTIMIZATION}
+          </button>
+          <button
+            onClick={() => setActiveTab('integration')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all shadow-sm ${
+              activeTab === 'integration' 
+                ? 'bg-white text-purple-600 ring-2 ring-purple-600' 
+                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+            }`}
+          >
+            <Activity size={18} />
+            {LABELS.TAB_INTEGRATION}
+          </button>
+        </div>
+
+        {/* ===== PESTAÑA: OPTIMIZACIÓN (DERIVADAS) ===== */}
+        {activeTab === 'optimization' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid md:grid-cols-12 gap-6">
+              
+              {/* Columna de Controles */}
+              <div className="md:col-span-4 space-y-6">
+                <Card className="p-6">
+                  <SectionTitle 
+                    icon={Calculator} 
+                    title={LABELS.OPTIMIZATION_TITLE}
+                    subtitle={LABELS.OPTIMIZATION_SUBTITLE}
+                  />
+                  
+                  <div className="space-y-6">
+                    {/* Fórmula de la función de costo */}
+                    <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                      <p className="text-xs font-mono text-slate-500 mb-2 text-center">
+                        FUNCIÓN DE COSTO TOTAL
+                      </p>
+                      <div className="text-center text-lg font-serif italic">
+                        C(x) = <span className="text-blue-600">{k1}</span>x² + <span className="text-blue-600">{k2}</span>/x
+                      </div>
+                    </div>
+
+                    {/* Sliders de parámetros */}
+                    <Slider 
+                      label={LABELS.SLIDER_K1}
+                      value={k1} 
+                      min={OPTIMIZATION_DEFAULTS.K1_MIN}
+                      max={OPTIMIZATION_DEFAULTS.K1_MAX}
+                      step={OPTIMIZATION_DEFAULTS.K1_STEP}
+                      onChange={setK1} 
+                    />
+                    <Slider 
+                      label={LABELS.SLIDER_K2}
+                      value={k2} 
+                      min={OPTIMIZATION_DEFAULTS.K2_MIN}
+                      max={OPTIMIZATION_DEFAULTS.K2_MAX}
+                      step={OPTIMIZATION_DEFAULTS.K2_STEP}
+                      onChange={setK2} 
+                    />
+                    
+                    <hr className="border-slate-100 my-4"/>
+                    
+                    {/* Slider de configuración del usuario */}
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                      <Slider 
+                        label={LABELS.SLIDER_USER_RAM}
+                        value={userX} 
+                        min={OPTIMIZATION_DEFAULTS.USER_RAM_MIN}
+                        max={OPTIMIZATION_DEFAULTS.USER_RAM_MAX}
+                        step={OPTIMIZATION_DEFAULTS.USER_RAM_STEP}
+                        unit={LABELS.UNIT_GB}
+                        onChange={setUserX} 
+                      />
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Panel de Explicación Matemática */}
+                <Card className="p-6 bg-white text-slate-800 border-slate-200 shadow-md">
+                  <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800">
+                    <Info size={18} className="text-blue-600" /> 
+                    Explicación Matemática
+                  </h3>
+                  <div className="space-y-4 text-sm text-slate-600">
+                    <div>
+                      <p className="font-semibold text-slate-800 mb-1">
+                        1. Derivamos la función de costo:
+                      </p>
+                      <code className="block bg-slate-900 p-2 rounded-lg border border-slate-700 font-mono text-xs text-green-400 shadow-sm">
+                        C'(x) = 2k₁x - k₂/x²
+                      </code>
+                    </div>
+                    
+                    <div>
+                      <p className="font-semibold text-slate-800 mb-1">
+                        2. Igualamos a cero para optimizar:
+                      </p>
+                      <code className="block bg-slate-900 p-2 rounded-lg border border-slate-700 font-mono text-xs text-green-400 shadow-sm">
+                        2({k1})x = {k2}/x²
+                      </code>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-slate-800 mb-1">
+                        3. Despejamos x (punto crítico):
+                      </p>
+                      <code className="block bg-slate-900 p-2 rounded-lg border border-slate-700 font-mono text-xs text-green-400 shadow-sm">
+                        x = ∛({k2} / {2 * k1})
+                      </code>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-slate-800 mb-1">
+                        4. Verificamos que es un mínimo:
+                      </p>
+                      <code className="block bg-slate-900 p-2 rounded-lg border border-slate-700 font-mono text-xs text-green-400 shadow-sm">
+                        C''(x) = 2k₁ + 2k₂/x³ &gt; 0 ✓
+                      </code>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Columna de Resultados */}
+              <div className="md:col-span-8 space-y-6">
+                {/* Gráfica de optimización */}
+                <Card className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="font-bold text-lg text-slate-700">
+                      Análisis de Costos
+                    </h3>
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                        <span>Costo Total</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span>Óptimo</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="h-64 w-full">
+                    <OptimizationGraph 
+                      k1={k1} 
+                      k2={k2} 
+                      optimalX={optimalX} 
+                      currentX={userX} 
+                    />
+                  </div>
+                </Card>
+
+                {/* Tarjetas de métricas */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="p-5 border-l-4 border-l-green-500">
+                    <div className="text-slate-500 text-sm font-medium mb-1">
+                      RAM Óptima
+                    </div>
+                    <div className="text-3xl font-bold text-slate-800">
+                      {optimalX.toFixed(2)} <span className="text-sm font-normal text-slate-400">{LABELS.UNIT_GB}</span>
+                    </div>
+                    <div className="text-xs text-green-600 mt-2 font-medium bg-green-50 inline-block px-2 py-1 rounded">
+                      Punto de Mínimo Global
+                    </div>
+                  </Card>
+
+                  <Card className="p-5 border-l-4 border-l-red-500">
+                    <div className="text-slate-500 text-sm font-medium mb-1">
+                      Costo Actual
+                    </div>
+                    <div className="text-3xl font-bold text-slate-800">
+                      ${savingsData.currentCost.toFixed(2)} <span className="text-sm font-normal text-slate-400">/h</span>
+                    </div>
+                    <div className="text-xs text-red-600 mt-2 font-medium">
+                      Usando {userX} GB
+                    </div>
+                  </Card>
+
+                  <Card className={`p-5 border-l-4 transition-colors ${
+                    savingsData.savings > 0 ? 'border-l-blue-500 bg-blue-50' : 'border-l-slate-300'
+                  }`}>
+                    <div className="text-slate-500 text-sm font-medium mb-1">
+                      Ahorro Potencial
+                    </div>
+                    <div className={`text-3xl font-bold ${
+                      savingsData.savings > 0 ? 'text-blue-700' : 'text-slate-400'
+                    }`}>
+                      ${savingsData.savings.toFixed(2)}
+                    </div>
+                    {savingsData.savings > 0 && (
+                      <div className="text-xs text-blue-700 mt-2 font-bold">
+                        ¡{savingsData.percentSavings.toFixed(1)}% de reducción!
+                      </div>
+                    )}
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {/* ===== PESTAÑA: ACUMULACIÓN (INTEGRALES) ===== */}
+        {activeTab === 'integration' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid md:grid-cols-12 gap-6">
+              
+              {/* Columna de Controles */}
+              <div className="md:col-span-4 space-y-6">
+                <Card className="p-6">
+                  <SectionTitle 
+                    icon={Zap} 
+                    title={LABELS.ENERGY_TITLE}
+                    subtitle={LABELS.ENERGY_SUBTITLE}
+                  />
+                  
+                  <div className="space-y-6">
+                    {/* Fórmula de consumo */}
+                    <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                      <p className="text-xs font-mono text-slate-500 mb-2 text-center">
+                        FUNCIÓN DE TASA DE CONSUMO
+                      </p>
+                      <div className="text-center text-lg font-serif italic">
+                        E(t) = <span className="text-blue-600">{baseA}</span> + <span className="text-purple-600">{ampB}</span>sin(<span className="text-xs">2π/24</span> t)
+                      </div>
+                    </div>
+
+                    {/* Sliders de parámetros energéticos */}
+                    <Slider 
+                      label={LABELS.SLIDER_BASE}
+                      value={baseA} 
+                      min={ENERGY_DEFAULTS.BASE_MIN}
+                      max={ENERGY_DEFAULTS.BASE_MAX}
+                      step={ENERGY_DEFAULTS.BASE_STEP}
+                      unit={LABELS.UNIT_KW}
+                      onChange={setBaseA} 
+                    />
+                    <Slider 
+                      label={LABELS.SLIDER_AMPLITUDE}
+                      value={ampB} 
+                      min={ENERGY_DEFAULTS.AMPLITUDE_MIN}
+                      max={ENERGY_DEFAULTS.AMPLITUDE_MAX}
+                      step={ENERGY_DEFAULTS.AMPLITUDE_STEP}
+                      unit={LABELS.UNIT_KW}
+                      onChange={setAmpB} 
+                    />
+                  </div>
+                </Card>
+                
+                {/* Panel de Teorema Fundamental del Cálculo */}
+                <Card className="p-6 bg-white text-slate-800 border-slate-200 shadow-md">
+                  <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800">
+                    <Info size={18} className="text-blue-600" /> 
+                    Teorema Fundamental
+                  </h3>
+                  <div className="space-y-4 text-sm text-slate-600">
+                    <div>
+                      <p className="font-semibold text-slate-800 mb-1">
+                        La energía total es el área bajo la curva de potencia:
+                      </p>
+                      <code className="block bg-slate-900 p-2 rounded-lg border border-slate-700 font-mono text-xs text-purple-400 shadow-sm">
+                        ∫₀²⁴ (A + Bsin(ωt)) dt
+                      </code>
+                    </div>
+                    
+                    <div>
+                      <p className="font-semibold text-slate-800 mb-1">
+                        Resolvemos la integral definida:
+                      </p>
+                      <code className="block bg-slate-900 p-2 rounded-lg border border-slate-700 font-mono text-xs text-purple-400 shadow-sm">
+                        = [At - (B/ω)cos(ωt)]₀²⁴
+                      </code>
+                    </div>
+                    
+                    <div>
+                      <p className="font-semibold text-slate-800 mb-1">
+                        Con ω = 2π/24, el término oscilatorio se cancela en un ciclo completo:
+                      </p>
+                      <code className="block bg-slate-900 p-2 rounded-lg border border-slate-700 font-mono text-xs text-purple-400 shadow-sm">
+                        Total = 24 · A = {totalEnergy.toFixed(2)} kWh
+                      </code>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Columna de Gráfica y Resultados */}
+              <div className="md:col-span-8 space-y-6">
+                {/* Gráfica de consumo energético */}
+                <Card className="p-6 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Zap size={120} />
+                  </div>
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="font-bold text-lg text-slate-700">
+                      Perfil de Consumo (24 Horas)
+                    </h3>
+                  </div>
+                  
+                  <div className="h-64 w-full">
+                    <IntegralGraph A={baseA} B={ampB} />
+                  </div>
+                </Card>
+
+                {/* Tarjetas de resultados energéticos */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="p-6 bg-gradient-to-br from-purple-600 to-blue-600 text-white border-none">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                        <Activity size={24} />
+                      </div>
+                      <span className="font-medium text-purple-100">
+                        Energía Total (Integral)
+                      </span>
+                    </div>
+                    <div className="text-4xl font-bold mt-2 tracking-tight">
+                      {totalEnergy.toFixed(2)} <span className="text-xl font-normal opacity-80">{LABELS.UNIT_KWH}</span>
+                    </div>
+                    <p className="text-xs mt-2 text-purple-100 opacity-70">
+                      Área total bajo la curva azul
+                    </p>
+                  </Card>
+
+                  <Card className="p-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-green-100 text-green-600 rounded-lg">
+                        <DollarSign size={24} />
+                      </div>
+                      <span className="font-medium text-slate-500">
+                        Costo Estimado del Día
+                      </span>
+                    </div>
+                    <div className="text-4xl font-bold mt-2 tracking-tight text-slate-800">
+                      ${energyCost.toFixed(2)}
+                    </div>
+                    <p className="text-xs mt-2 text-slate-400">
+                      Tarifa: ${ENERGY_DEFAULTS.PRICE_PER_KWH}/kWh
+                    </p>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
