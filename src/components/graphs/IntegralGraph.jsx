@@ -64,7 +64,14 @@ export const IntegralGraph = ({ A, B }) => {
   ];
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full bg-slate-50 rounded-lg border border-slate-200">
+    <div className="w-full h-full flex flex-col">
+      {/* Leyenda */}
+      <div className="flex justify-end items-center gap-2 mb-2 px-2">
+        <div className="w-4 h-3 bg-blue-200 border border-blue-600 rounded-sm"></div>
+        <span className="text-xs text-slate-500">Área = Energía Total (kWh)</span>
+      </div>
+      
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full flex-1 bg-slate-50 rounded-lg border border-slate-200">
       {/* Grid horizontal */}
       {yTicks.map((tick, i) => (
         <g key={`y-grid-${i}`}>
@@ -134,7 +141,7 @@ export const IntegralGraph = ({ A, B }) => {
       {/* Etiquetas de los ejes */}
       <text 
         x={width / 2} 
-        y={height - 5} 
+        y={height - 10} 
         textAnchor="middle" 
         fontSize="13" 
         fill="#1e293b" 
@@ -143,13 +150,13 @@ export const IntegralGraph = ({ A, B }) => {
         Tiempo (horas del día)
       </text>
       <text 
-        x={20} 
+        x={10} 
         y={height / 2} 
         textAnchor="middle" 
         fontSize="13" 
         fill="#1e293b" 
         fontWeight="600" 
-        transform={`rotate(-90, 20, ${height / 2})`}
+        transform={`rotate(-90, 10, ${height / 2})`}
       >
         Consumo (kW)
       </text>
@@ -169,27 +176,6 @@ export const IntegralGraph = ({ A, B }) => {
         strokeWidth="3" 
       />
 
-      {/* Leyenda */}
-      <g>
-        <rect 
-          x={width - padding - 150} 
-          y={padding + 5} 
-          width={20} 
-          height={15} 
-          fill="rgba(59, 130, 246, 0.25)" 
-          stroke="#2563eb" 
-          strokeWidth="1"
-        />
-        <text 
-          x={width - padding - 125} 
-          y={padding + 17} 
-          fontSize="11" 
-          fill="#64748b"
-        >
-          Área = Energía Total (kWh)
-        </text>
-      </g>
-
       {/* Indicadores de valores máximo y mínimo */}
       <circle 
         cx={xScale(6)} 
@@ -206,5 +192,6 @@ export const IntegralGraph = ({ A, B }) => {
         opacity="0.7"
       />
     </svg>
+    </div>
   );
 };

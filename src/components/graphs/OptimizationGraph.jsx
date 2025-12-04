@@ -60,7 +60,20 @@ export const OptimizationGraph = ({ k1, k2, optimalX, currentX }) => {
   const yTicks = [0, Math.round(maxY / 2), Math.round(maxY)];
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full bg-slate-50 rounded-lg border border-slate-200">
+    <div className="w-full h-full flex flex-col">
+      {/* Leyenda */}
+      <div className="flex justify-end items-center gap-4 mb-2 px-2">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-0.5 border-t-2 border-dashed border-slate-400"></div>
+          <span className="text-xs text-slate-500">Componentes individuales</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-0.5 bg-blue-600"></div>
+          <span className="text-xs font-semibold text-blue-600">Costo Total</span>
+        </div>
+      </div>
+      
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full flex-1 bg-slate-50 rounded-lg border border-slate-200">
       {/* Grid horizontal */}
       {yTicks.map((tick, i) => (
         <g key={`y-grid-${i}`}>
@@ -130,7 +143,7 @@ export const OptimizationGraph = ({ k1, k2, optimalX, currentX }) => {
       {/* Etiquetas de los ejes */}
       <text 
         x={width / 2} 
-        y={height - 5} 
+        y={height - 10} 
         textAnchor="middle" 
         fontSize="13" 
         fill="#1e293b" 
@@ -139,13 +152,13 @@ export const OptimizationGraph = ({ k1, k2, optimalX, currentX }) => {
         Asignación de RAM (GB)
       </text>
       <text 
-        x={20} 
+        x={10} 
         y={height / 2} 
         textAnchor="middle" 
         fontSize="13" 
         fill="#1e293b" 
         fontWeight="600" 
-        transform={`rotate(-90, 20, ${height / 2})`}
+        transform={`rotate(-90, 10, ${height / 2})`}
       >
         Costo ($/hora)
       </text>
@@ -173,25 +186,6 @@ export const OptimizationGraph = ({ k1, k2, optimalX, currentX }) => {
         stroke="#2563eb" 
         strokeWidth="3" 
       />
-
-      {/* Leyenda */}
-      <g>
-        <text x={width - padding - 10} y={padding + 10} textAnchor="end" fontSize="11" fill="#94a3b8">
-          --- Componentes individuales
-        </text>
-        <line 
-          x1={width - padding - 90} 
-          y1={padding + 6} 
-          x2={width - padding - 15} 
-          y2={padding + 6} 
-          stroke="#94a3b8" 
-          strokeWidth="2" 
-          strokeDasharray="5,3" 
-        />
-        <text x={width - padding - 10} y={padding + 25} textAnchor="end" fontSize="11" fill="#2563eb" fontWeight="bold">
-          ━━ Costo Total
-        </text>
-      </g>
 
       {/* Punto Óptimo (mínimo de la función) */}
       <circle cx={xScale(optimalX)} cy={yScale(optimalY)} r="6" fill="#22c55e" stroke="#16a34a" strokeWidth="2" />
@@ -241,5 +235,6 @@ export const OptimizationGraph = ({ k1, k2, optimalX, currentX }) => {
         </>
       )}
     </svg>
+    </div>
   );
 };
